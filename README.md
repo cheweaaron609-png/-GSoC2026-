@@ -22,12 +22,16 @@ The first challenge was that the library had 666 existing .po translation files,
 A script called json_builder.py reads all 666 existing .po files and consolidates their content into a single structured file called holidays_l10n.json. Each entry in this JSON represents one holiday and contains its English name (used as the translation key), all its translations across every language, and the list of countries it applies to.
 
 For example, Hong Kong's Lunar New Year's Eve entry looks like this:
+
 <img width="1206" height="344" alt="image" src="https://github.com/user-attachments/assets/4a36119f-8431-4ebc-8beb-046edca16906" />
+
 This entry is separate from the general Chinese New Year's Eve entry because Hong Kong's government uses a legally distinct official name — confirmed by researching the Cap. 149 General Holidays Ordinance. This is an example of the linguistic research that was a significant part of Step 1
 
 ### The splitting mechanism
 A key feature of json_builder.py is the ability to split a general holiday entry into a country-specific one when that country has a genuinely different official name. For example, Bulgaria's Independence Day uses a different name than the 92 other countries that also have an "Independence Day" holiday. Running
+
 <img width="751" height="84" alt="image" src="https://github.com/user-attachments/assets/c869775c-3ce4-4595-96d8-e4fb07c18a05" />
+
 Creates a separate entry for Bulgaria while correctly removing Bulgaria's translations from the general entry. A significant engineering challenge was ensuring that language-country codes like en_HK and zh_HK were handled correctly during splits ,a local translation variant is still valid for the general entry even after the country is split out.
 
 ### Linguistic research work
@@ -76,7 +80,9 @@ The new translation model only works when all three pieces are in place together
 - The generator must run cleanly before the country files can be updated. Once every nested variant is split into its own entry, the generator produces bg.po, fr.po, uk.po and 157 other language files  each containing every holiday in the library with that language's translation as msgstr. These files then get compiled to .mo binary files that Python's gettext module can read at runtime
 The country files must be updated before the new model works end-to-end. Right now Bulgaria's country file still calls tr("Ден на Независимостта на България") using the Bulgarian string directly. But bg.mo no longer maps Bulgarian → Bulgarian. It maps English → Bulgarian. So tr("Independence Day of Bulgaria") → "Ден на Независимостта на България". replace_tr_strings.py does this replacement automatically across all 3557 call sites
 Once all three are in place, the full system works like this:
+
 <img width="635" height="161" alt="image" src="https://github.com/user-attachments/assets/af96d507-57a6-416e-9a67-3c2a896daff8" />
+
 The same bg.mo file works for any country: if  Ukraine wants Bulgarian names for German holidays, holidays.Germany(language='bg') loads the same bg.mo and returns Bulgarian names for every German holiday. This is what the per-locale model makes possible one file per language, serving the entire library
 ----
 ### Pull Requests
