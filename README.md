@@ -23,7 +23,7 @@ A script called json_builder.py reads all 666 existing .po files and consolidate
 
 For example, Hong Kong's Lunar New Year's Eve entry looks like this:
 
-<img width="1442" height="414" alt="image" src="https://github.com/user-attachments/assets/bd19c10a-5fcd-463a-8c34-54c96c61a84e" />
+<img width="1409" height="696" alt="image" src="https://github.com/user-attachments/assets/9718791e-de0e-4a2c-aa2f-58136b540200" />
 
 
 This entry is separate from the general Chinese New Year's Eve entry because Hong Kong's government uses a legally distinct official name — confirmed by researching the Cap. 149 General Holidays Ordinance. This is an example of the linguistic research that was a significant part of Step 1
@@ -39,7 +39,7 @@ Creates a separate entry for Bulgaria while correctly removing Bulgaria's transl
 Step 1 required not just coding but careful linguistic verification. Key findings included:
 - Hong Kong Lunar New Year's Eve — researched Cap. 149 General Holidays Ordinance to confirm HK uses a descriptive phrase because this day is not a statutory holiday in HK the way it is in China, Macau and Taiwan
 - UAE Thai localization merged  - while analyzing the JSON, I identified inconsistencies in how Thai translations were being generated for UAE holidays. My mentors saw this in the PR review and fixed it immediately in [PR #3596](https://github.com/vacanza/holidays/pull/3596), which was merged in reference to my PR, showing how effective the project is at early stages.**
--Monaco French translations merged - the intermediate JSON surfaced that Monaco's Labor Day was stored as "Fête de la Travaille". The word Travaille is a verb form in French meaning "he/she works" grammatically wrong as a noun. This finding led my mentor to do a comprehensive Monaco update in [PR #3678](https://github.com/vacanza/holidays/pull/3678), going beyond just fixing the typo to creating a dedicated fr_MC locale with properly formatted translations following Monaco's official naming convention
+- Monaco French translations merged - the intermediate JSON surfaced that Monaco's Labor Day was stored as "Fête de la Travaille". The word Travaille is a verb form in French meaning "he/she works" grammatically wrong as a noun. This finding led my mentor to do a comprehensive Monaco update in [PR #3678](https://github.com/vacanza/holidays/pull/3678), going beyond just fixing the typo to creating a dedicated fr_MC locale with properly formatted translations following Monaco's official naming convention
 
 ---
 ### Step 2 — Generating the New Per-Locale Files
@@ -93,7 +93,7 @@ Once all three are in place, the full system works like this:
 
 
 
-The same bg.mo file works for any country: if  Ukraine wants Bulgarian names for German holidays, holidays.Germany(language='bg') loads the same bg.mo and returns Bulgarian names for every German holiday. This is what the per-locale model makes possible one file per language, serving the entire library
+- The same bg.mo file works for any country: if  Ukraine wants Bulgarian names for German holidays, holidays.Germany(language='bg') loads the same bg.mo and returns Bulgarian names for every German holiday. This is what the per-locale model makes possible one file per language, serving the entire library
 ----
 ### Pull Requests
 | PR | Description | Status |
