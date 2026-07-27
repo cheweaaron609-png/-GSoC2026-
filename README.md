@@ -23,7 +23,8 @@ A script called json_builder.py reads all 666 existing .po files and consolidate
 
 For example, Hong Kong's Lunar New Year's Eve entry looks like this:
 
-<img width="1206" height="344" alt="image" src="https://github.com/user-attachments/assets/4a36119f-8431-4ebc-8beb-046edca16906" />
+<img width="1442" height="414" alt="image" src="https://github.com/user-attachments/assets/bd19c10a-5fcd-463a-8c34-54c96c61a84e" />
+
 
 This entry is separate from the general Chinese New Year's Eve entry because Hong Kong's government uses a legally distinct official name — confirmed by researching the Cap. 149 General Holidays Ordinance. This is an example of the linguistic research that was a significant part of Step 1
 
@@ -37,8 +38,8 @@ Creates a separate entry for Bulgaria while correctly removing Bulgaria's transl
 ### Linguistic research work
 Step 1 required not just coding but careful linguistic verification. Key findings included:
 - Hong Kong Lunar New Year's Eve — researched Cap. 149 General Holidays Ordinance to confirm HK uses a descriptive phrase because this day is not a statutory holiday in HK the way it is in China, Macau and Taiwan
-- **UAE Thai localization merged ** - while analyzing the JSON, I identified inconsistencies in how Thai translations were being generated for UAE holidays. My mentors saw this in the PR review and fixed it immediately in [PR #3596](https://github.com/vacanza/holidays/pull/3596), which was merged in reference to my PR, showing how effective the project is at early stages.**
--**Monaco French translations merged**- the intermediate JSON surfaced that Monaco's Labor Day was stored as "Fête de la Travaille". The word Travaille is a verb form in French meaning "he/she works" grammatically wrong as a noun. This finding led my mentor to do a comprehensive Monaco update in [PR #3678](https://github.com/vacanza/holidays/pull/3678), going beyond just fixing the typo to creating a dedicated fr_MC locale with properly formatted translations following Monaco's official naming convention
+- UAE Thai localization merged  - while analyzing the JSON, I identified inconsistencies in how Thai translations were being generated for UAE holidays. My mentors saw this in the PR review and fixed it immediately in [PR #3596](https://github.com/vacanza/holidays/pull/3596), which was merged in reference to my PR, showing how effective the project is at early stages.**
+-Monaco French translations merged - the intermediate JSON surfaced that Monaco's Labor Day was stored as "Fête de la Travaille". The word Travaille is a verb form in French meaning "he/she works" grammatically wrong as a noun. This finding led my mentor to do a comprehensive Monaco update in [PR #3678](https://github.com/vacanza/holidays/pull/3678), going beyond just fixing the typo to creating a dedicated fr_MC locale with properly formatted translations following Monaco's official naming convention
 
 ---
 ### Step 2 — Generating the New Per-Locale Files
@@ -56,23 +57,29 @@ With the new translation system in place, the country .py files needed updating.
 ### What was built
 A script called replace_tr_strings.py automatically updates all these calls across every country and financial market file in the library. It uses Python's Abstract Syntax Tree (AST) module to parse each file and make precise replacements — unlike simple string search-and-replace, this approach cannot accidentally break code by merging lines or dropping closing parentheses.
 ### Key challenges solved:
-Multi-line strings — some tr() calls span multiple lines with concatenated strings in different character sets. The script handles these correctly using byte-to-character offset conversion for multibyte characters like Cyrillic, Arabic and Chinese
-Ambiguous strings — some translation strings appear in multiple different holidays. The script identifies these and skips them rather than making a wrong replacement
-Comment cleanup — old l10n comments above each tr() call are updated with the new_comment from the JSON, or removed if no new comment exists
+- Multi-line strings — some tr() calls span multiple lines with concatenated strings in different character sets. The script handles these correctly using byte-to-character offset conversion for multibyte characters like Cyrillic, Arabic and Chinese
+- Ambiguous strings — some translation strings appear in multiple different holidays. The script identifies these and skips them rather than making a wrong replacement
+- Comment cleanup — old l10n comments above each tr() call are updated with the new_comment from the JSON, or removed if no new comment exists
 The script identified 3557 replacements across all country and financial files
+
 ---
 ### What Is Still In Progress
 ### JSON — Nested Translation Variants
-Before the per-locale .po files can be generated cleanly, every language entry in the JSON must be a flat string — not a nested dictionary of country variants. For example, an entry like this blocks the generator:
-<img width="715" height="107" alt="image" src="https://github.com/user-attachments/assets/5e47503a-654c-4b7a-8ae0-fd457e476e3d" />
-This means Côte d'Ivoire uses a different French name for All Saints' Day than Belgium and France. The generator cannot put two different French translations into one fr.po file for the same msgid — Gettext doesn't work that way. The solution is to split Côte d'Ivoire into its own entry with its own msgid, leaving the majority in the source entry with a flat fr: "Toussaint".
-This splitting work is also dependent on [PR # 3720] [https://github.com/vacanza/holidays/pull/3720]  — "Update l10n: general unification" — which standardizes holiday name translations across countries first. Some entries that currently appear as different translations are actually just capitalisation inconsistencies that should be unified rather than split. Once PR #3720 merges, the JSON will be rebuilt from the unified .po files and the splits redone correctly — only where countries have genuinely different official names
+- Before the per-locale .po files can be generated cleanly, every language entry in the JSON must be a flat string — not a nested dictionary of country variants. For example, an entry like this blocks the generator:
+  
+<img width="963" height="316" alt="image" src="https://github.com/user-attachments/assets/439749a0-e071-4819-9e1d-1eee5643700f" />
+
+
+- This means Côte d'Ivoire uses a different French name for All Saints' Day than Belgium and France. The generator cannot put two different French translations into one fr.po file for the same msgid — Gettext doesn't work that way. The solution is to split Côte d'Ivoire into its own entry with its own msgid, leaving the majority in the source entry with a flat fr: "Toussaint".
+- This splitting work is also dependent on [PR # 3720] [https://github.com/vacanza/holidays/pull/3720]  — "Update l10n: general unification" — which standardizes holiday name translations across countries first. Some entries that currently appear as different translations are actually just capitalisation inconsistencies that should be unified rather than split. Once PR #3720 merges, the JSON will be rebuilt from the unified .po files and the splits redone correctly — only where countries have genuinely different official names
+
 ---
 ### Per-Locale Generator
 generate_locale_po_files.py reads holidays_l10n.json and generates one .po file per language containing every holiday in the library. Right now it produces 160 language files with 2452 entries each —for example bg.po contains Bulgarian translations for every holiday from Afghanistan to Zimbabwe, not just Bulgarian holidays.
 - However, the generator has a strict requirement:every language entry in the JSON must be a flat string before it can run
 - The reason for this strict requirement goes back to how Gettext works a .po file is a dictionary where one msgid maps to exactly one translation. There is no way to say "use this French translation in Belgium but this other one in Côte d'Ivoire" in the same file. If two countries genuinely use different names for the same holiday in the same language, they are by definition different holidays that need separate msgids, and that is exactly what the splitting work in Step 1 resolves before Step 2 can run cleanly.
 - Once the JSON is fully verified and all genuine naming differences are correctly split into separate entries, the generator will produce clean output for all 160 languages. The number of entries will grow beyond 2452 — each split adds one new entry. For example if "Independence Day" is currently one entry covering 93 countries but 15 of those have genuinely different official names, it becomes 16 entries after splitting. Each one gets its own msgid and its own translations in every language file.
+
 ---
 ### A New Translation Model — How It All Connects
 The new translation model only works when all three pieces are in place together  and each one depends on the previous. This final step,  which changes how the library loads translations at runtime  and this is where everything comes together
@@ -81,7 +88,10 @@ The new translation model only works when all three pieces are in place together
 The country files must be updated before the new model works end-to-end. Right now Bulgaria's country file still calls tr("Ден на Независимостта на България") using the Bulgarian string directly. But bg.mo no longer maps Bulgarian → Bulgarian. It maps English → Bulgarian. So tr("Independence Day of Bulgaria") → "Ден на Независимостта на България". replace_tr_strings.py does this replacement automatically across all 3557 call sites
 Once all three are in place, the full system works like this:
 
-<img width="635" height="161" alt="image" src="https://github.com/user-attachments/assets/af96d507-57a6-416e-9a67-3c2a896daff8" />
+
+<img width="1357" height="410" alt="image" src="https://github.com/user-attachments/assets/30166882-f3da-448c-a285-694b513bd880" />
+
+
 
 The same bg.mo file works for any country: if  Ukraine wants Bulgarian names for German holidays, holidays.Germany(language='bg') loads the same bg.mo and returns Bulgarian names for every German holiday. This is what the per-locale model makes possible one file per language, serving the entire library
 ----
